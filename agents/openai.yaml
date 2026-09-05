@@ -1,0 +1,4 @@
+interface:
+  display_name: "Markdown to Obsidian Paper Card"
+  short_description: "Build bilingual Obsidian paper cards from Markdown or Zotero papers"
+  default_prompt: "Use $markdown-to-obsidian-paper-card to turn a Zotero paper or existing paper Markdown into a complete bilingual Obsidian reading card."

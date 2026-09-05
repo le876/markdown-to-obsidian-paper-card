@@ -43,10 +43,6 @@ SOFTWARE.
 
 ## README demonstration screenshot
 
-`docs/images/paper-card-preview.png` is a user-supplied screenshot of an Obsidian
-reading note. It includes paper text and a figure from
-[π0: A Vision-Language-Action Flow Model for General Robot Control](https://www.physicalintelligence.company/blog/pi0),
-as well as reader-added annotations. The paper material remains the property of
-its respective authors/rightsholders. The screenshot is provided for demonstration
-and is excluded from this repository's MIT license; no permission to redistribute
-the underlying paper material is granted by the code license.
+The user-supplied screenshot in `docs/images/paper-card-preview.png` includes
+third-party paper text and figures. Rights to that material remain with the
+respective authors; it is not covered by the code's MIT license.

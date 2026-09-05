@@ -1,6 +1,6 @@
 # Markdown to Obsidian Paper Card
 
-将已有论文 Markdown 或 Zotero 中的论文来源整理为 Obsidian 论文阅读卡的 Codex skill。支持完整英中对照翻译、图片归档、参考文献跳转、公式保护、Figure 悬停链接及可恢复的验证工作流。
+以**论文排版与阅读体验**为核心的 Codex skill：将论文 Markdown 整理为适合 Obsidian 阅读的笔记，补齐图片超链接、文献上角标超链接引用与公式检查，并通过 subagent 生成完整中英对照。
 
 本仓库发布 skill 和本地 Python 工具，不包含私人 vault、Zotero 数据库、论文包、模型凭据或历史会话。代码采用 [MIT](LICENSE)；外部依赖和互操作来源见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
@@ -16,14 +16,41 @@
 
 ## 能做什么
 
-- 接收裸 Markdown 或 schema v1 source package，将附件归档到 vault 中稳定的相对路径。
-- 按 `Clippings → 论文 → Zotero` 的顺序精确解析题名，避免重复抓取已有来源。
-- `translation-mode=none` 整理格式；`bilingual` 生成完整中英对照、保护公式和引用，并只翻译参考文献的作品题名。
-- 通过冻结 packet、逐单元缓存、模型运行证明及最终校验支持中断恢复。
-- 为唯一图片目标补充 Figure 链接；遇到歧义保留原文并报告，不猜测附件。
-- 可选支持 Image Converter 1.4.4 居中缓存、已有 MinerU 布局的 PDF figure 裁剪、Spark 排版审查。
+### 1. 核心：让论文在 Obsidian 中更好读
 
-`mineru-api-markdown` 是独立、可选的解析 skill，本仓库不附带该 skill，也不调用 MinerU API。已有 Markdown 可以直接使用。
+- **图片超链接**：将正文中的 `Figure 1`、`Fig. 1` 等图号关联到对应图片，方便点击查看；配合 Obsidian 的悬停预览功能，可以直接预览图像。图片归档为 vault 内稳定的相对路径，避免临时路径失效。
+- **文献上角标超链接引用**：把正文中的数字文献引用整理为可点击的上角标，跳转到文末对应参考文献，减少阅读时反复查找编号的操作。
+- **公式排版**：检查 Obsidian/MathJax 所需的公式定界符，处理可确定识别的图注重复 TeX 显示内容，并在排版与翻译过程中保护公式。
+- **整体版式整理**：规范标题、摘要、图注、表格与参考文献，让网页剪藏或 OCR 得到的 Markdown 更适合连续阅读。
+
+图片目标或参考文献对应关系存在歧义时保留原文并报告，不猜测跳转目标。只需要排版时可选择 `translation-mode=none`。
+
+### 2. 使用 subagent 翻译，生成中英对照
+
+由专用 `paper-translation-worker` 原生子代理完成论文翻译，生成逐段对应的英文原文与中文译文，方便对照阅读和核查术语。正文、标题、图表说明等语义内容进入翻译流程；公式、引用和受保护标记在翻译前冻结、返回后校验。
+
+参考文献保留英文书目信息，只附加作品题名的中文翻译。已通过验证的译文可以缓存复用，减少中断恢复时重复翻译。完整双语流程使用 `translation-mode=bilingual`，需要先配置对应的 Codex 子代理运行环境。
+
+### 3. 公式校对与完整性检查
+
+检查行内 `$...$`、独立公式 `$$...$$` 的定界符配对，以及公式在翻译前后的保护标记与内容完整性；对可确定的重复显示问题进行修复。
+
+OCR 中的符号误识别、上下标含义和数学推导是否正确，需要结合原始 PDF 或 HTML 逐式复核。当前自动检查主要覆盖格式、渲染结构和传输完整性，不能把校验通过等同于数学语义已经正确。
+
+## 论文文件从哪里来
+
+本 skill 的处理入口是 **Markdown**。先把论文内容及图片准备好，再进行排版、公式检查和中英对照翻译。
+
+| 论文来源 | 推荐准备方式 | 交给本 skill 的内容 |
+| --- | --- | --- |
+| **PDF 论文** | 先通过 OCR/文档解析转换为 Markdown，推荐使用 [MinerU 线上转换](https://mineru.net/) | 导出的 `.md` 与配套图片；保持附件路径可解析 |
+| **HTML 论文**，例如 arXiv 提供的 HTML 全文 | 使用 [Obsidian Web Clipper](https://help.obsidian.md/web-clipper) 浏览器扩展直接剪藏到 vault，建议保存到 `Clippings/` | 剪藏得到的 Markdown；检查是否保留了全文、公式和图片 |
+| **已有 Markdown** | 直接提供文件，无需重新 OCR | `.md` 与可访问的图片资源，或带附件映射的 source package |
+| **Zotero 中的 PDF** | 可按题名定位本地附件，再走 PDF → Markdown 的解析步骤 | 已解析的 Markdown 或 source package；定位到 PDF 不代表已完成识别 |
+
+对于有 HTML 全文的论文，可以直接剪藏 HTML，不必先下载 PDF 再 OCR。剪藏完成后由本 skill 继续清理网页噪声、整理图文与引用，并按需翻译；只有摘要页时，不能将摘要剪藏当作论文全文。
+
+按题名启动时，先查找 `Clippings/`，再查找 `论文/`，最后才定位 Zotero 来源，优先复用已有 Markdown。MinerU 负责前置解析，本 skill 负责后续论文卡处理：可手动使用 MinerU 网站，也可另行安装 `mineru-api-markdown` skill。本仓库不附带该解析 skill，不调用 MinerU API，也不默认授予 PDF 上传许可。
 
 ## 环境与安装
 

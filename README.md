@@ -4,6 +4,16 @@
 
 本仓库发布 skill 和本地 Python 工具，不包含私人 vault、Zotero 数据库、论文包、模型凭据或历史会话。代码采用 [MIT](LICENSE)；外部依赖和互操作来源见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
+## 效果展示
+
+<a href="docs/images/paper-card-preview.png">
+  <img src="docs/images/paper-card-preview.png" alt="Obsidian 论文卡阅读示例：论文插图、英文原文、中文对照、公式与补充批注" width="560">
+</a>
+
+以 π0 论文为例，展示 Obsidian 中的插图、英文原文、中文对照和公式呈现。截图包含使用者补充的学习批注；实际外观取决于主题及插件，并非所有批注都由 skill 自动生成。点击图片可查看原图。
+
+论文内容与插图来自 [π0 项目](https://www.physicalintelligence.company/blog/pi0)，相关权利属于原作者；展示截图不适用本仓库代码的 MIT 许可。
+
 ## 能做什么
 
 - 接收裸 Markdown 或 schema v1 source package，将附件归档到 vault 中稳定的相对路径。
@@ -117,3 +127,13 @@ git diff --check
 首版验证使用 Windows / Python 3.12、合成数据和本地测试环境。测试覆盖 Zotero 顺序与歧义、图片及引文、公式 token、角色冻结、原生证明验证、缓存、恢复和原子写入。测试里的模型结果/rollout 是合成记录；通过测试不等于完成真实模型翻译。首版发布检查未调用真实翻译模型、Spark 或 MinerU，未执行 Obsidian GUI 验收。
 
 后续在维护仓库修改并测试，审查差异后再安装到运行目录。只推送源码及合成测试素材；每次发布检查暂存文件和提交身份。不要将当前运行目录反向整体覆盖到维护仓库。
+
+### 区分维护仓库与安装副本
+
+维护仓库目录建议命名为 `markdown-to-obsidian-paper-card-publish`，用于开发、测试、审查与推送；安装目录保持 `markdown-to-obsidian-paper-card`，用于实际转换论文。目录后缀不改变 GitHub 仓库名或 skill 的 `name`。
+
+```powershell
+git clone https://github.com/le876/markdown-to-obsidian-paper-card.git markdown-to-obsidian-paper-card-publish
+```
+
+已有独立维护仓库可以只重命名其目录；安装副本无需改名。更新仍从维护仓库经测试和审查后单向安装，不将运行数据同步到发布仓库。
